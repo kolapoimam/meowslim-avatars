@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {generateOptions,renderAvatar,choices} from '../src/avatar.js';
+test('stable seed',()=>assert.deepEqual(generateOptions('amina'),generateOptions('amina')));
+test('different seeds affect choices',()=>assert.notDeepEqual(generateOptions('amina'),generateOptions('yusuf')));
+test('renders valid SVG',()=>{const svg=renderAvatar(generateOptions('amina'));assert.match(svg,/<svg/);assert.match(svg,/<\/svg>/)});
+test('all coverings render',()=>{for(const covering of choices.covering){const gender=['hijab','khimar','niqab','burqa'].includes(covering)?'female':'male';assert.match(renderAvatar(generateOptions('test',{gender,covering})),/<svg/)}});
+test('invalid covering falls back safely',()=>assert.ok(choices.covering.includes(generateOptions('test',{covering:'<script>'}).covering)));
+test('colors are validated',()=>assert.notEqual(generateOptions('test',{fabricColor:'url(javascript:foo)'}).fabricColor,'url(javascript:foo)'));
+test('output escapes arbitrary seed',()=>assert.doesNotMatch(renderAvatar(generateOptions('<script>alert(1)</script>')),/<script>/));
+test('transparent mode renders',()=>assert.match(renderAvatar(generateOptions('amina',{transparent:true})),/<svg/));
